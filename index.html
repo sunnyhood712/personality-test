@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是阴阳怪气的谁？</title>
+<style>
+  :root{
+    --paper:#f0f7f4;
+    --ink:#2a3a3a;
+    --blue:#4a90d9;
+    --yellow:#f5c842;
+    --mint:#7ec8a0;
+    --line:#c8dfd6;
+    --grey:#7a9a8e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 10%, #e3f5ff 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, #fff8d6 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, #e8f8ef 0%, transparent 60%),
+      var(--paper);
+    min-height:100vh;
+    display:flex;justify-content:center;
+    padding:32px 18px 56px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{width:100%;max-width:620px;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fade .35s ease both;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .cover{text-align:center;padding-top:5vh;}
+  .seal{
+    width:72px;height:72px;line-height:72px;margin:0 auto 28px;
+    background:linear-gradient(135deg,var(--blue),var(--mint));
+    color:#fff;border-radius:50%;font-size:32px;
+    box-shadow:0 8px 24px rgba(74,144,217,.3);
+  }
+  .cover h1{font-size:32px;line-height:1.5;font-weight:700;letter-spacing:1px;}
+  .cover h1 em{
+    font-style:normal;
+    background:linear-gradient(120deg,var(--blue),var(--mint));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .cover .sub{margin:20px auto 0;max-width:400px;font-size:15px;line-height:1.9;color:#5a7a6e;}
+  .hint{margin-top:16px;font-size:13px;color:#9ab0a6;letter-spacing:1px;}
+  .cover-members{margin-top:24px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+  .member-tag{font-size:12px;padding:4px 12px;border-radius:20px;
+    background:rgba(74,144,217,.1);color:var(--blue);border:1px solid rgba(74,144,217,.2);}
+
+  .btn{display:inline-block;border:none;cursor:pointer;
+    font-family:inherit;font-size:16px;font-weight:600;letter-spacing:1px;
+    padding:14px 40px;border-radius:50px;
+    transition:transform .15s ease, box-shadow .2s ease;}
+  .btn.primary{margin-top:32px;
+    background:linear-gradient(135deg,var(--blue),var(--mint));
+    color:#fff;box-shadow:0 8px 24px rgba(74,144,217,.3);}
+  .btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(74,144,217,.4);}
+  .btn.ghost{background:transparent;color:var(--grey);border:1px solid var(--line);font-size:14px;padding:10px 22px;border-radius:50px;}
+  .btn.ghost:hover{color:var(--blue);border-color:var(--blue);}
+
+  .progress{height:6px;background:#dceee5;border-radius:3px;overflow:hidden;margin-bottom:14px;}
+  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--mint));border-radius:3px;transition:width .35s ease;}
+  .counter{font-size:13px;color:var(--grey);letter-spacing:1px;margin-bottom:24px;}
+  .q-title{font-size:20px;line-height:1.7;font-weight:700;margin-bottom:24px;min-height:76px;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .option{text-align:left;font-family:inherit;font-size:15px;line-height:1.6;font-weight:500;
+    color:var(--ink);background:#fff;border:2px solid #e0efe8;border-radius:12px;
+    padding:16px 20px;cursor:pointer;transition:all .18s ease;}
+  .option:hover{border-color:var(--blue);background:#f5fbff;transform:translateX(4px);}
+  .option.selected{border-color:var(--blue);background:#eaf6ff;box-shadow:0 0 0 3px rgba(74,144,217,.15);}
+  #backBtn{margin-top:24px;}
+
+  .result-card{background:#fff;border:2px solid #e0efe8;border-radius:16px;
+    padding:36px 24px 30px;box-shadow:0 16px 48px rgba(74,144,217,.1);}
+  .result-label{font-size:13px;letter-spacing:3px;color:var(--grey);}
+  .result-name{font-size:38px;letter-spacing:2px;font-weight:700;margin:8px 0 6px;
+    background:linear-gradient(135deg,var(--blue),var(--mint));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .result-tag{display:inline-block;font-size:13px;font-weight:600;color:var(--yellow);
+    background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.3);
+    border-radius:20px;padding:4px 16px;margin-bottom:18px;}
+
+  .quote-box{font-size:15px;color:#3a6a5a;text-align:center;
+    padding:18px 20px;background:#f0faf5;border-radius:12px;margin-bottom:22px;
+    border-left:4px solid var(--mint);line-height:1.8;font-weight:500;}
+
+  .match{font-size:15px;color:#5a7a6e;margin-bottom:20px;}
+  .match strong{color:var(--blue);font-size:24px;font-weight:700;}
+
+  .desc{font-size:15px;line-height:2;color:#3a4a44;
+    padding:18px 0;border-top:1px solid #e8f2ec;border-bottom:1px solid #e8f2ec;margin-bottom:28px;}
+
+  .section-title{font-size:14px;font-weight:700;color:var(--grey);margin-bottom:16px;text-align:center;letter-spacing:1px;}
+  .radar-container{display:flex;justify-content:center;align-items:center;margin-bottom:18px;padding:8px 0;}
+  .radar-svg{width:100%;max-width:320px;height:auto;overflow:visible;}
+
+  .trait-desc-box{background:#f8fcfa;border:1px solid #e0efe8;border-radius:12px;padding:16px;margin-bottom:28px;}
+  .trait-desc-item{font-size:13px;line-height:1.8;color:#5a7a6e;margin-bottom:8px;}
+  .trait-desc-item:last-child{margin-bottom:0;}
+  .trait-desc-item strong{color:var(--blue);font-weight:700;}
+
+  .guide-box{background:linear-gradient(135deg,#fffef5 0%,#f5fce8 100%);
+    border:1px solid #e8f0d8;border-radius:12px;padding:20px;margin-bottom:28px;}
+  .guide-title{font-size:14px;font-weight:700;color:#8aaa50;margin-bottom:10px;}
+  .guide-content{font-size:14px;line-height:1.9;color:#5a6a4a;}
+  .guide-content strong{color:var(--blue);}
+
+  .others{margin-bottom:28px;}
+  .other-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px dashed #e0efe8;font-size:15px;}
+  .other-item:last-child{border-bottom:none;}
+  .other-item span:last-child{color:var(--grey);font-size:13px;}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;}
+  .actions .btn.primary{margin-top:0;padding:13px 30px;font-size:15px;flex:1;}
+  .actions .btn.ghost{padding:13px 26px;flex:1;}
+
+  @media (max-width:420px){
+    .cover h1{font-size:26px;}
+    .result-name{font-size:30px;}
+    .q-title{font-size:18px;}
+    .result-card{padding:26px 16px 22px;}
+    .radar-svg{max-width:270px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section id="screen-intro" class="screen active">
+    <div class="cover">
+      <div class="seal">🌞</div>
+      <h1>你是<em>阴阳怪气</em>里的谁？</h1>
+      <p class="sub">25道题，测测你的灵魂底色，匹配B站最强整活团队里和你最像的那个人。</p>
+      <div class="cover-members">
+        <span class="member-tag">老番茄</span>
+        <span class="member-tag">某幻</span>
+        <span class="member-tag">花少北</span>
+        <span class="member-tag">中国boy</span>
+        <span class="member-tag">Lex</span>
+      </div>
+      <button class="btn primary" id="startBtn">开始鉴定</button>
+      <p class="hint">约 4 分钟 · 仅娱乐测试 · 请凭直觉作答</p>
+    </div>
+  </section>
+
+  <section id="screen-quiz" class="screen">
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="counter" id="counter"></div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <div class="options" id="options"></div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <section id="screen-result" class="screen">
+    <div class="result-card">
+      <div class="result-label">你 最 像</div>
+      <h1 class="result-name" id="rName"></h1>
+      <div class="result-tag" id="rTag"></div>
+      <div class="match">匹配度 <strong id="rMatch"></strong>%</div>
+
+      <div class="quote-box" id="rQuote"></div>
+      <p class="desc" id="rDesc"></p>
+
+      <div class="section-title">✦ 你的整活光谱 ✦</div>
+      <div class="radar-container">
+        <div id="radarSvgBox"></div>
+      </div>
+      <div class="trait-desc-box" id="rTraitDesc"></div>
+
+      <div class="guide-box">
+        <div class="guide-title">✦ 给你的粉丝生存指南 ✦</div>
+        <div class="guide-content" id="rGuide"></div>
+      </div>
+
+      <div class="others">
+        <div class="section-title">✦ 你的灵魂拼图 ✦</div>
+        <div id="rOthers"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="againBtn">再测一次</button>
+        <button class="btn ghost" id="shareBtn">复制结果</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   1. 四个核心维度
+   ========================================================= */
+const AXES = [
+  { key:'chaos',  neg:'稳重', pos:'整活' },
+  { key:'sharp',  neg:'温柔', pos:'毒舌' },
+  { key:'loyal',  neg:'随性', pos:'重情' },
+  { key:'show',   neg:'低调', pos:'显眼包' }
+];
+
+/* =========================================================
+   2. 五位UP主数据（坐标已分散，确保结果多样性）
+   ========================================================= */
+const FIGURES = [
+  { name:'花少北', tag:'河北首富 · 阴阳怪气帝中帝',
+    quote:'“我就不耽误你第八年了。”——嘴上说着不耽误，耽误了整整七年。',
+    desc:'你就是那种在群聊里嘴最碎、阴阳话最多、但真出事了第一个站出来的人。表面上是“河北首富”，实际上是个连被子都没有只能盖钱的可怜人。你习惯用最贱的语气说最真的话，用“不耽误你第八年了”这种渣男语录来掩饰自己其实比谁都在乎。粉丝说你冷酷无情，那是他们没看到你半夜三点在群里发“兄弟们我emo了”。你这个人，嘴上没有一句正经话，心里没有一天不在操心别人。',
+    guide:'你最大的问题是：永远在用玩笑试探别人的底线，然后用“我开玩笑的”全身而退。你太怕认真了，因为认真就意味着可能会输。但兄弟，有些话不说出口，就真的烂在肚子里了。试着认真一次，哪怕被拒绝，也比“不耽误你第八年”强。还有，别再熬夜了，你的黑眼圈已经是河北非物质文化遗产了。',
+    v:{ chaos:85, sharp:75, loyal:55, show:85 } },
+
+  { name:'某幻君', tag:'青岛教父 · 马了顶大',
+    quote:'“我裂开了兄弟萌～”——表面佛系，实则每天都在裂开。',
+    desc:'你就是那种嘴上永远“都行”、“随便”、“无所谓”，但心里早就有一万条弹幕在刷屏的人。你的“我裂开了”已经成了口头禅，从游戏输到外卖凉了到快递被偷，你的人生就是一部大型“裂开”连续剧。看起来佛系得很，其实你比谁都较真，只是你早就学会了用自嘲来消化所有委屈。青岛暖男的人设，掩盖不了你其实是个嘴硬心软、被生活反复捶打还在努力微笑的普通人。',
+    guide:'你的“我裂开了”说了太多次，以至于身边人都以为你真的什么都不在乎。但你知道吗，真正在乎你的人，能听出这句“裂开”背后的疲惫。试着有一次，不说“我裂开了”，而是说“我需要帮忙”。你不需要永远当那个能自己消化的青岛暖男。还有，马了顶大到底是什么意思，你自己解释一下。',
+    v:{ chaos:40, sharp:25, loyal:80, show:20 } },
+
+  { name:'中国boy', tag:'汤达人 · 来路上能拍三个vlog',
+    quote:'“做视频的速度快得就像喝汤。”——快是真快，水也是真水。',
+    desc:'你就是那种精力旺盛到让人怀疑你偷偷嗑了什么东西的人。一天三个vlog，还能顺便打个嗝、喊一句“牛牛你不累吗牛牛”、然后继续笑嘻嘻地剪下一个视频。你的快乐是真的，但你的“快乐”有时候也是一种自我保护——用高强度的输出填满每一分钟，就不用面对独处时那些不想面对的东西。你是朋友圈里最吵的那个人，也是深夜群里突然安静下来的那个。',
+    guide:'你的“每日一嗝”已经成了固定节目，但你有没有想过，人也是可以不打嗝的？你可以累，可以不想说话，可以不拍vlog。你不是内容机器，你是个人。还有，你那句“牛牛你不累吗牛牛”问的是牛牛还是你自己？建议你认真回答一下。最后，喝汤确实快，但喝太快容易烫嘴。',
+    v:{ chaos:90, sharp:25, loyal:60, show:95 } },
+
+  { name:'LexBurner', tag:'蕾忍宗宗主 · 太↑痛↓苦——了——',
+    quote:'“吓我一跳我释放忍术！”——倒放比本人更真诚的男人。',
+    desc:'你就是那种嘴上说着“我一点错都没有”，实际上已经在心里把自己骂了八百遍的人。你的“太痛苦了”不是演的，那是真实的、持续的、不间断的生存状态。但你最大的才能是：把所有的崩溃都活成了段子，把所有的委屈都变成了梗。你是阴阳怪气男团里最会阴阳的那个，也是最容易破防的那个。你用毒舌保护自己，用“释放忍术”来逃避问题，但你自己也清楚，忍术救不了你，只能救直播效果。',
+    guide:'你的倒放确实是门艺术，“吓我一跳我释放忍术”比你说过的任何一句正经话都好听。但兄弟，忍术能倒放，人生不能。有些问题不会因为你说“太痛苦了”就消失，该面对的还是得面对。你可以继续当蕾忍宗宗主，但宗主也有累的时候。建议你偶尔放下忍术，认真说一句“我错了”，效果可能比倒放更炸裂。',
+    v:{ chaos:55, sharp:95, loyal:65, show:70 } },
+
+  { name:'老番茄', tag:'复旦之耻 · 财大NB',
+    quote:'“财大NB！财大NB！财大NB！”——复旦最丢人的毕业生，B站最成功的UP主。',
+    desc:'你就是那种明明有实力，却非要装成废物的人。复旦毕业，却天天喊“财大NB”；智商在线，却天天被花少北吐槽“就你这智商还复旦呢”。你的“我的MA呀”和“死神，来收人了”已经成了固定演出，但你真正厉害的地方在于：你太清楚观众想看什么了，所以你把自己活成了一个角色。那个“被欺负的老好人”是你，但也不完全是你。在你看似没心没肺的整活背后，是一个极其清醒、极其自律、极其知道自己在干什么的人。',
+    guide:'你已经把“复旦之耻”这个人设玩到极致了，但玩久了也会累吧。你可以不用永远当那个被调侃的对象，你可以认真，可以强势，可以说“我不想演了”。粉丝喜欢的是你，不是你的人设。还有，财大NB喊多了，复旦校友会已经在找你了。',
+    v:{ chaos:0, sharp:25, loyal:5, show:-10 } }
+];
+
+/* =========================================================
+   3. 六边形特质
+   ========================================================= */
+const TRAITS = [
+  { key:'chaos',   name:'整活力', descHigh:'整活是你刻在DNA里的本能，没有你热不起来的场子。', descLow:'你比较稳重，比起整活更喜欢安安静静做自己的事。' },
+  { key:'sharp',   name:'毒舌度', descHigh:'阴阳怪气是你的母语，吐槽功力登峰造极。', descLow:'你说话比较温和，不太擅长也不忍心毒舌别人。' },
+  { key:'loyal',   name:'重情义', descHigh:'你对朋友极其护短，嘴上不说但行动永远到位。', descLow:'你比较随性，朋友很多但交心的门槛很高。' },
+  { key:'show',    name:'显眼包', descHigh:'你就是人群中最亮的仔，天生自带聚光灯。', descLow:'你更喜欢低调，在人多的场合倾向于默默观察。' },
+  { key:'broken',  name:'破防速度', descHigh:'你表面嘻嘻哈哈，其实内心很敏感，一戳就破防。', descLow:'你的心态极其稳定，很少有东西能真正让你破防。' },
+  { key:'talent',  name:'隐藏才华', descHigh:'你看起来在整活，其实你认真起来比谁都强。', descLow:'你表里如一，展现出来的就是真实的你。' }
+];
+
+/* =========================================================
+   4. 题库（25题·黑色幽默·梗零重复）
+   ========================================================= */
+const QUESTIONS = [
+  { text:'无聊的时候你会选择什么方式消遣：',
+    options:[
+      { text:'看最近新上映的电影奥德赛，打击封建余孽', v:{chaos:3, sharp:3, loyal:1, show:2} },
+      { text:'噫嘘唏，来一首古文提升文化底蕴', v:{chaos:2, sharp:3, loyal:0, show:0} },
+      { text:'在家躺一整天耍手机', v:{chaos:-1, sharp:-2, loyal:2, show:0} },
+      { text:'大唱lalala我们都是summer boy', v:{chaos:-1, sharp:-1, loyal:-2, show:-2} }
+    ]},
+
+  { text:'你朋友被人欺负了，你的第一反应是：',
+    options:[
+      { text:'直接冲上去帮他骂回去', v:{chaos:2, sharp:3, loyal:3, show:2} },
+      { text:'先问清楚情况，再决定怎么处理', v:{chaos:0, sharp:2, loyal:2, show:0} },
+      { text:'表面不说什么，私下帮他想办法', v:{chaos:0, sharp:1, loyal:3, show:-1} },
+      { text:'“你自己处理吧，我懒得管”', v:{chaos:-1, sharp:0, loyal:-3, show:-1} }
+    ]},
+
+  { text:'你对象问你“我们以后怎么办”，你的真实想法是：',
+    options:[
+      { text:'“我就不耽误你第八年了。”', v:{chaos:3, sharp:3, loyal:-2, show:1} },
+      { text:'“你烦不烦，能不能别想这些”', v:{chaos:2, sharp:2, loyal:-1, show:1} },
+      { text:'认真想了一下，然后说“再说吧”', v:{chaos:1, sharp:1, loyal:0, show:0} },
+      { text:'“我的错我的错，都听你的”', v:{chaos:-1, sharp:-2, loyal:2, show:-1} }
+    ]},
+
+  { text:'你在打游戏时突然被阴了，你脱口而出的是：',
+    options:[
+      { text:'“吓我一跳我释放忍术！”', v:{chaos:3, sharp:2, loyal:0, show:2} },
+      { text:'“我裂开了兄弟萌～”', v:{chaos:2, sharp:1, loyal:0, show:1} },
+      { text:'沉默三秒，然后默默重开', v:{chaos:0, sharp:0, loyal:0, show:-1} },
+      { text:'“这游戏有问题，不玩了”', v:{chaos:1, sharp:2, loyal:-1, show:0} }
+    ]},
+
+  { text:'朋友聚会，有人提议玩“谁最阴阳怪气”评选，你觉得：',
+    options:[
+      { text:'这还用选？肯定是我啊', v:{chaos:3, sharp:3, loyal:0, show:3} },
+      { text:'“别选我别选我”，但其实暗爽', v:{chaos:2, sharp:1, loyal:1, show:1} },
+      { text:'无所谓，选谁都行', v:{chaos:0, sharp:0, loyal:0, show:-1} },
+      { text:'这种活动好尴尬，我能不能不参加', v:{chaos:-2, sharp:-2, loyal:0, show:-3} }
+    ]},
+
+  { text:'你精心准备了一个月的方案/视频，被领导/审核一句话否了，你会：',
+    options:[
+      { text:'“太↑痛↓苦——了——”然后发朋友圈', v:{chaos:2, sharp:1, loyal:0, show:3} },
+      { text:'表面笑嘻嘻，心里已经在写辞职信了', v:{chaos:1, sharp:3, loyal:0, show:-1} },
+      { text:'“我一点错都没有”，据理力争', v:{chaos:2, sharp:3, loyal:1, show:1} },
+      { text:'默默改，改到过为止，不废话', v:{chaos:-1, sharp:0, loyal:2, show:-2} }
+    ]},
+
+  { text:'如果你的好兄弟谈恋爱了，天天在群里秀恩爱，你会：',
+    options:[
+      { text:'“变质了，友谊变质了”', v:{chaos:2, sharp:3, loyal:2, show:2} },
+      { text:'祝福他，然后默默减少找他打游戏的频率', v:{chaos:-1, sharp:0, loyal:2, show:-1} },
+      { text:'什么也不说，悄悄拉黑', v:{chaos:3, sharp:2, loyal:1, show:1} },
+      { text:'无所谓，他开心就好', v:{chaos:0, sharp:0, loyal:1, show:0} }
+    ]},
+
+  { text:'朋友凌晨三点发朋友圈说“好饿”，你会：',
+    options:[
+      { text:'“你吃了吗？我给你点外卖~”', v:{chaos:1, sharp:0, loyal:3, show:1} },
+      { text:'“快睡吧，梦里啥都有”', v:{chaos:0, sharp:2, loyal:0, show:0} },
+      { text:'直接甩一个红包过去', v:{chaos:1, sharp:0, loyal:2, show:0} },
+      { text:'点个赞，然后继续刷自己的', v:{chaos:0, sharp:0, loyal:-1, show:-1} }
+    ]},
+
+  { text:'你在B站最常看的视频类型是：',
+    options:[
+      { text:'游戏整活，越离谱越好', v:{chaos:3, sharp:1, loyal:0, show:2} },
+      { text:'吐槽/锐评类，看别人嘴替', v:{chaos:1, sharp:3, loyal:0, show:1} },
+      { text:'生活vlog，看别人的日常', v:{chaos:0, sharp:-1, loyal:1, show:0} },
+      { text:'鬼畜/二创，越抽象越上头', v:{chaos:3, sharp:2, loyal:0, show:2} }
+    ]},
+
+  { text:'你母校校庆邀请你回去演讲，你的开场白是：',
+    options:[
+      { text:'“母校NB！母校NB！母校NB！”', v:{chaos:3, sharp:1, loyal:1, show:3} },
+      { text:'“其实我是隔壁学校的，走错了”', v:{chaos:2, sharp:2, loyal:0, show:2} },
+      { text:'认真准备了一个PPT，结果超时被赶下台', v:{chaos:0, sharp:0, loyal:2, show:-1} },
+      { text:'“我不配，我让学校蒙羞了”', v:{chaos:-1, sharp:1, loyal:1, show:-1} }
+    ]},
+
+  { text:'你突然中了一百万，第一件事是：',
+    options:[
+      { text:'我要把钱送给我的工友（流口水）', v:{chaos:1, sharp:0, loyal:3, show:2} },
+      { text:'辞职，去旅行', v:{chaos:2, sharp:0, loyal:-1, show:1} },
+      { text:'存起来，当什么都没发生', v:{chaos:-2, sharp:0, loyal:0, show:-2} },
+      { text:'请全粉丝吃饭，直播间抽奖', v:{chaos:3, sharp:0, loyal:1, show:3} }
+    ]},
+
+  { text:'你交作业/交方案的速度，在同事眼里是：',
+    options:[
+      { text:'“快得就像喝汤”，别人还没开始你已经交完了', v:{chaos:3, sharp:0, loyal:0, show:2} },
+      { text:'正常速度，不快不慢刚刚好', v:{chaos:0, sharp:0, loyal:1, show:0} },
+      { text:'拖更王者，不到死线绝对不动手', v:{chaos:1, sharp:1, loyal:0, show:-1} },
+      { text:'看心情，心情好一天三个，心情差一个月零个', v:{chaos:2, sharp:0, loyal:0, show:1} }
+    ]},
+
+  { text:'你在视频/朋友圈被人刷“就这？”，你会：',
+    options:[
+      { text:'“你的素质低低低！”直接回怼', v:{chaos:3, sharp:3, loyal:0, show:2} },
+      { text:'假装没看见，心里默默记下了', v:{chaos:0, sharp:1, loyal:0, show:-1} },
+      { text:'“对对对，你说得都对”阴阳回去', v:{chaos:2, sharp:3, loyal:0, show:1} },
+      { text:'真的会难过很久，怀疑自己', v:{chaos:-1, sharp:-2, loyal:0, show:-1} }
+    ]},
+
+  { text:'你朋友做了一件极其愚蠢的事，你会吐槽：',
+    options:[
+      { text:'“就你这智商，还上大学的呢？”', v:{chaos:2, sharp:3, loyal:1, show:1} },
+      { text:'“没事，谁还没个犯蠢的时候”', v:{chaos:0, sharp:-1, loyal:2, show:0} },
+      { text:'“我早就说过了，你不听”', v:{chaos:1, sharp:2, loyal:0, show:1} },
+      { text:'什么都不说，但心里默默记下了', v:{chaos:-1, sharp:1, loyal:1, show:-2} }
+    ]},
+
+  { text:'你和朋友打游戏，朋友坑了好几次，你会：',
+    options:[
+      { text:'“你怎么这么菜啊，退群吧”', v:{chaos:3, sharp:3, loyal:1, show:2} },
+      { text:'嘴上骂骂咧咧，但下一把还是带他', v:{chaos:2, sharp:2, loyal:3, show:1} },
+      { text:'自己点投降让朋友消气', v:{chaos:0, sharp:0, loyal:-2, show:-1} },
+      { text:'耐心教他，鼓励他慢慢来', v:{chaos:-1, sharp:-2, loyal:2, show:0} }
+    ]},
+
+  { text:'你完成了一项特别难的任务，你的第一句话是：',
+    options:[
+      { text:'“死神，来收人了。”', v:{chaos:3, sharp:2, loyal:0, show:2} },
+      { text:'“终于搞定了，累死我了”', v:{chaos:0, sharp:0, loyal:0, show:0} },
+      { text:'发个朋友圈，配文“轻轻松松”', v:{chaos:2, sharp:1, loyal:0, show:3} },
+      { text:'默默截图存档，然后继续下一个', v:{chaos:-1, sharp:1, loyal:0, show:-1} }
+    ]},
+
+  { text:'你最怕哪种朋友？',
+    options:[
+      { text:'动不动就破防的', v:{chaos:1, sharp:1, loyal:1, show:1} },
+      { text:'永远在装，从来不真诚的', v:{chaos:0, sharp:3, loyal:2, show:0} },
+      { text:'把你当情绪垃圾桶的', v:{chaos:-1, sharp:1, loyal:-1, show:-1} },
+      { text:'背后说你坏话的', v:{chaos:1, sharp:2, loyal:2, show:1} }
+    ]},
+
+  { text:'你朋友突然说了一句完全听不懂的话，你会：',
+    options:[
+      { text:'自己也胡说一句', v:{chaos:3, sharp:1, loyal:1, show:2} },
+      { text:'“你没事吧？要不要去医院”', v:{chaos:0, sharp:2, loyal:2, show:0} },
+      { text:'跟着复读，越读越上头', v:{chaos:2, sharp:0, loyal:1, show:2} },
+      { text:'“你是不是有什么大病啊！！！”', v:{chaos:2, sharp:2, loyal:0, show:1} }
+    ]},
+
+  { text:'你觉得自己在朋友中的角色是：',
+    options:[
+      { text:'气氛组，负责搞笑的', v:{chaos:3, sharp:1, loyal:1, show:3} },
+      { text:'军师，负责出主意的', v:{chaos:0, sharp:3, loyal:1, show:0} },
+      { text:'守护者，负责兜底的', v:{chaos:0, sharp:0, loyal:3, show:-1} },
+      { text:'观察者，负责在角落吃瓜的', v:{chaos:1, sharp:1, loyal:0, show:-3} }
+    ]},
+
+  { text:'你看到朋友养的猫/狗做了一件特别搞笑的事，你会：',
+    options:[
+      { text:'“牛牛你不累吗牛牛！”疯狂重复', v:{chaos:3, sharp:0, loyal:1, show:3} },
+      { text:'拍下来发朋友圈', v:{chaos:2, sharp:0, loyal:0, show:2} },
+      { text:'默默笑一下，然后继续做自己的事', v:{chaos:0, sharp:0, loyal:0, show:-2} },
+      { text:'“好可爱啊，我能摸摸吗”', v:{chaos:1, sharp:-1, loyal:1, show:0} }
+    ]},
+
+  { text:'你最近遇到了很大的困难，支撑你走下去的是：',
+    options:[
+      { text:'“过了垭口，还是垭口。”', v:{chaos:1, sharp:0, loyal:2, show:0} },
+      { text:'“反正最差也就这样了，躺平吧”', v:{chaos:1, sharp:1, loyal:0, show:-1} },
+      { text:'朋友们的鼓励和陪伴', v:{chaos:0, sharp:0, loyal:3, show:0} },
+      { text:'不服气，我偏要证明自己', v:{chaos:2, sharp:2, loyal:0, show:2} }
+    ]},
+
+  { text:'你看到特别离谱的事情时，脱口而出的是：',
+    options:[
+      { text:'“我的MA呀！”', v:{chaos:2, sharp:0, loyal:0, show:2} },
+      { text:'“卧槽，真的假的”', v:{chaos:2, sharp:1, loyal:0, show:1} },
+      { text:'“牛逼，太牛逼了”', v:{chaos:1, sharp:0, loyal:0, show:1} },
+      { text:'什么都不说，但表情已经出卖了你', v:{chaos:0, sharp:0, loyal:1, show:-1} }
+    ]},
+
+  { text:'夏天的夜晚，房间里的蚊子在你耳畔飞来飞去，你会：',
+    options:[
+      { text:'“我最讨厌蚊子了，天天就会吸血”然后拍死', v:{chaos:3, sharp:3, loyal:3, show:2} },
+      { text:'懒得理，反正自己血厚', v:{chaos:0, sharp:1, loyal:2, show:-1} },
+      { text:'“蚊子是生物链重要的一环，我就喜欢让他们吸血”', v:{chaos:2, sharp:3, loyal:1, show:1} },
+      { text:'心里不舒服但假装没听到', v:{chaos:-1, sharp:-2, loyal:1, show:-1} }
+    ]},
+
+  { text:'你玩斗地主/麻将的时候，会：',
+    options:[
+      { text:'“托管！喝水！自信！走！”然后回来输了', v:{chaos:3, sharp:1, loyal:0, show:2} },
+      { text:'认真算牌，绝不托管', v:{chaos:-1, sharp:2, loyal:0, show:-1} },
+      { text:'边玩边跟旁边的人聊天，根本不在乎输赢', v:{chaos:2, sharp:0, loyal:1, show:1} },
+      { text:'输了就甩锅给队友', v:{chaos:1, sharp:2, loyal:-1, show:1} }
+    ]},
+
+  { text:'最后一个问题：你觉得“阴阳怪气”的本质是什么？',
+    options:[
+      { text:'“我裂开了兄弟萌～”但还是会继续阴阳', v:{chaos:3, sharp:1, loyal:1, show:2} },
+      { text:'是朋友之间最高级的亲密', v:{chaos:1, sharp:1, loyal:3, show:0} },
+      { text:'是一种保护自己的方式', v:{chaos:0, sharp:2, loyal:0, show:-1} },
+      { text:'是看透了这个世界之后的温柔', v:{chaos:0, sharp:1, loyal:2, show:-1} }
+    ]}
+];
+
+/* =========================================================
+   5. 计算逻辑
+   ========================================================= */
+const MAX_ABS = {};
+AXES.forEach(ax => {
+  let sum = 0;
+  QUESTIONS.forEach(q => {
+    sum += Math.max(...q.options.map(o => Math.abs(o.v[ax.key] || 0)));
+  });
+  MAX_ABS[ax.key] = sum;
+});
+
+const $ = id => document.getElementById(id);
+let answers = [];
+let current = 0;
+let locked = false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[current];
+  $('counter').textContent = `第 ${current + 1} / ${QUESTIONS.length} 题`;
+  $('bar').style.width = (current / QUESTIONS.length * 100) + '%';
+  $('qTitle').textContent = q.text;
+  $('backBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+
+  const box = $('options');
+  box.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option' + (answers[current] === i ? ' selected' : '');
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => choose(i));
+    box.appendChild(btn);
+  });
+  locked = false;
+}
+
+function choose(index){
+  if (locked) return;
+  locked = true;
+  answers[current] = index;
+  document.querySelectorAll('.option').forEach((b, i) => b.classList.toggle('selected', i === index));
+  setTimeout(() => {
+    if (current < QUESTIONS.length - 1){
+      current++;
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  }, 230);
+}
+
+function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+function buildUserVector(){
+  const raw = {};
+  AXES.forEach(ax => raw[ax.key] = 0);
+  answers.forEach((optIndex, qi) => {
+    const v = QUESTIONS[qi].options[optIndex].v;
+    AXES.forEach(ax => raw[ax.key] += (v[ax.key] || 0));
+  });
+  const vec = {};
+  AXES.forEach(ax => {
+    const ratio = raw[ax.key] / MAX_ABS[ax.key];
+    vec[ax.key] = clamp(ratio * 130, -100, 100);
+  });
+  return vec;
+}
+
+function buildTraitScores(userVec){
+  const t = {};
+  t.chaos  = clamp((userVec.chaos + 100) / 2, 0, 100);
+  t.sharp  = clamp((userVec.sharp + 100) / 2, 0, 100);
+  t.loyal  = clamp((userVec.loyal + 100) / 2, 0, 100);
+  t.show   = clamp((userVec.show + 100) / 2, 0, 100);
+  t.broken = clamp((-userVec.sharp + 100) / 2 * 0.7 + (userVec.chaos + 100) / 2 * 0.3, 0, 100);
+  t.talent = clamp((userVec.loyal + 100) / 2 * 0.6 + (userVec.sharp + 100) / 2 * 0.4, 0, 100);
+  return t;
+}
+
+function distance(a, b){
+  let sum = 0;
+  AXES.forEach(ax => {
+    const d = (a[ax.key] || 0) - (b[ax.key] || 0);
+    sum += d * d;
+  });
+  return Math.sqrt(sum);
+}
+
+function matchPercent(dist){
+  return Math.round(clamp(100 - dist / 4, 52, 97));
+}
+
+/* =========================================================
+   6. 雷达图
+   ========================================================= */
+function renderRadarChart(traitScores) {
+  const cx = 150, cy = 150, R = 90;
+  const N = TRAITS.length;
+  const angleStep = (Math.PI * 2) / N;
+  const offset = -Math.PI / 2;
+
+  const gridPoints = [];
+  for (let i = 0; i < N; i++) {
+    const angle = offset + i * angleStep;
+    gridPoints.push({ x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle) });
+  }
+
+  const dataPoints = [];
+  TRAITS.forEach((t, i) => {
+    const angle = offset + i * angleStep;
+    const r = (traitScores[t.key] / 100) * R;
+    dataPoints.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+  });
+
+  let svg = `<svg class="radar-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">`;
+
+  [0.25, 0.5, 0.75, 1].forEach(scale => {
+    const pts = gridPoints.map(p => `${cx + (p.x - cx) * scale},${cy + (p.y - cy) * scale}`).join(' ');
+    svg += `<polygon points="${pts}" fill="none" stroke="#dceee5" stroke-width="1" />`;
+  });
+
+  gridPoints.forEach(p => {
+    svg += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#dceee5" stroke-width="1" />`;
+  });
+
+  const dataPtsStr = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+  svg += `<polygon points="${dataPtsStr}" fill="rgba(74,144,217,0.2)" stroke="#4a90d9" stroke-width="2" stroke-linejoin="round" />`;
+
+  dataPoints.forEach(p => {
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#4a90d9" />`;
+  });
+
+  TRAITS.forEach((t, i) => {
+    const angle = offset + i * angleStep;
+    const labelR = R + 28;
+    const lx = cx + labelR * Math.cos(angle);
+    const ly = cy + labelR * Math.sin(angle);
+    let textAnchor = 'middle';
+    if (Math.cos(angle) > 0.1) textAnchor = 'start';
+    else if (Math.cos(angle) < -0.1) textAnchor = 'end';
+    let dy = '0.35em';
+    if (Math.sin(angle) < -0.8) dy = '0';
+    else if (Math.sin(angle) > 0.8) dy = '0.8em';
+
+    svg += `<text x="${lx}" y="${ly}" text-anchor="${textAnchor}" dy="${dy}" font-size="11" fill="#7a9a8e" font-family="inherit">${t.name}</text>`;
+  });
+
+  svg += `</svg>`;
+  document.getElementById('radarSvgBox').innerHTML = svg;
+}
+
+/* =========================================================
+   7. 展示结果
+   ========================================================= */
+let lastShareText = '';
+
+function showResult(){
+  const userVec = buildUserVector();
+  const traitScores = buildTraitScores(userVec);
+
+  const ranked = FIGURES.map(f => ({ ...f, dist: distance(userVec, f.v) })).sort((a, b) => a.dist - b.dist);
+  const best  = ranked[0];
+  const pct   = matchPercent(best.dist);
+
+  $('rName').textContent  = best.name;
+  $('rTag').textContent   = best.tag;
+  $('rMatch').textContent = pct;
+  $('rDesc').textContent  = best.desc;
+  $('rQuote').textContent = best.quote;
+  $('rGuide').innerHTML   = best.guide;
+
+  renderRadarChart(traitScores);
+
+  const descBox = $('rTraitDesc');
+  descBox.innerHTML = '';
+  TRAITS.forEach(t => {
+    const score = Math.round(traitScores[t.key]);
+    const desc = score >= 50 ? t.descHigh : t.descLow;
+    const item = document.createElement('div');
+    item.className = 'trait-desc-item';
+    item.innerHTML = `<strong>${t.name}（${score}分）：</strong>${desc}`;
+    descBox.appendChild(item);
+  });
+
+  const othersBox = $('rOthers');
+  othersBox.innerHTML = '';
+  ranked.slice(1, 4).forEach(f => {
+    const item = document.createElement('div');
+    item.className = 'other-item';
+    item.innerHTML = `<span>${f.name} · ${f.tag}</span><span>${matchPercent(f.dist)}%</span>`;
+    othersBox.appendChild(item);
+  });
+
+  lastShareText = `我在阴阳怪气里是【${best.name}】（${best.tag}），匹配度 ${pct}%。你是什么？`;
+  showScreen('screen-result');
+}
+
+// 事件绑定
+$('startBtn').addEventListener('click', () => {
+  answers = [];
+  current = 0;
+  renderQuestion();
+  showScreen('screen-quiz');
+});
+
+$('backBtn').addEventListener('click', () => {
+  if (current > 0 && !locked){ current--; renderQuestion(); }
+});
+
+$('againBtn').addEventListener('click', () => {
+  answers = [];
+  current = 0;
+  renderQuestion();
+  showScreen('screen-quiz');
+});
+
+$('shareBtn').addEventListener('click', async () => {
+  const btn = $('shareBtn');
+  try {
+    await navigator.clipboard.writeText(lastShareText);
+    btn.textContent = '已复制 ✓';
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = lastShareText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '已复制 ✓';
+  }
+  setTimeout(() => btn.textContent = '复制结果', 1600);
+});
+</script>
+</body>
+</html>
